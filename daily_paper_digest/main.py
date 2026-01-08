@@ -35,47 +35,61 @@ def run_daily_digest():
     papers = fetch_daily_papers()
     print(f"Found {len(papers)} papers.")
     
-    relevant_count = 0
+    relevant_papers = []
     
+    # 2. Filter and Score Relevance
     for paper in papers:
         title = paper['title']
         summary = paper['summary']
-        pdf_link = paper['pdf_link']
         
-        # 2. Check relevance
         print(f"Checking relevance for: {title}")
-        is_relevant, reason = check_relevance(title, summary, keywords)
-        time.sleep(2) # Rate limit politeness
+        is_relevant, score, reason = check_relevance(title, summary, keywords)
+        time.sleep(1) # Rate limit politeness
         
         if is_relevant:
-            print(f"-> RELEVANT ({reason}). Analyzing...")
-            relevant_count += 1
-            
-            # 3. Extract text
-            text = extract_text_from_pdf(pdf_link)
-            if not text:
-                print("-> Failed to extract text. Skipping.")
-                continue
-                
-            # 4. Analyze
-            report = analyze_paper(text)
-            
-            # 5. Send to Discord
-            
-            # Header
-            header = f"📄 **{title}**\n🔗 {paper['link']}\n\n**Relevance:** {reason}\n"
-            send_discord_message(webhook_url, header)
-            
-            # Report (Structured)
-            send_markdown_report(webhook_url, report)
-            
-            # Separator
-            send_discord_message(webhook_url, "✨ --------------------------------------------------------------------- ✨")
-            
+            print(f"-> RELEVANT (Score: {score}).")
+            paper['relevance_score'] = score
+            paper['relevance_reason'] = reason
+            relevant_papers.append(paper)
         else:
             print("-> Not relevant.")
             
-    print(f"[{datetime.now()}] Job complete. Sent {relevant_count} reports.")
+    # 3. Select Top 5
+    relevant_papers.sort(key=lambda x: x.get('relevance_score', 0), reverse=True)
+    top_papers = relevant_papers[:5]
+    
+    print(f"Selected {len(top_papers)} top papers from {len(relevant_papers)} relevant ones.")
+
+    # 4. Analyze and Send Top 5
+    for paper in top_papers:
+        title = paper['title']
+        pdf_link = paper['pdf_link']
+        reason = paper['relevance_reason']
+        score = paper['relevance_score']
+        
+        print(f"Analyzing Top Paper: {title} (Score: {score})")
+        
+        # 4a. Extract text
+        text = extract_text_from_pdf(pdf_link)
+        if not text:
+            print("-> Failed to extract text. Skipping.")
+            continue
+            
+        # 4b. Deep Research Analysis
+        report = analyze_paper(text)
+        
+        # 5. Send to Discord
+        # Header
+        header = f"📄 **{title}**\n🔗 {paper['link']}\n\n**Relevance (Score: {score}/10):** {reason}\n"
+        send_discord_message(webhook_url, header)
+        
+        # Report (Structured)
+        send_markdown_report(webhook_url, report)
+        
+        # Separator
+        send_discord_message(webhook_url, "✨ --------------------------------------------------------------------- ✨")
+            
+    print(f"[{datetime.now()}] Job complete. Sent {len(top_papers)} reports.")
 
 def start_scheduler():
     config = load_config()

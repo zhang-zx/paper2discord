@@ -16,13 +16,13 @@ else:
 def check_relevance(title, summary, keywords):
     """
     Asks Gemini if the paper is relevant based on title, summary and keywords.
-    Returns (bool, reason).
+    Returns (bool, score, reason). Score is 1-10.
     """
     if not api_key:
         print("GEMINI_API_KEY not found.")
-        return False, "Missing API Key"
+        return False, 0, "Missing API Key"
 
-    model = genai.GenerativeModel('gemini-3-pro-preview')
+    model = genai.GenerativeModel('gemini-2.0-flash-lite-preview-02-05')
     
     prompt = f"""
     I have a list of keywords indicating my research interests: {keywords}.
@@ -31,20 +31,44 @@ def check_relevance(title, summary, keywords):
     Title: {title}
     Abstract: {summary}
     
-    Is this paper relevant to my interests? 
-    Answer with "YES" or "NO" followed by a very brief explanation.
+    Tasks:
+    1. Is this paper relevant to my interests? Answer "YES" or "NO".
+    2. Provide a relevance score from 1 to 10 (10 being highly relevant).
+    3. Provide a very brief explanation.
+    
+    Format your response as:
+    DECISION: [YES/NO]
+    SCORE: [SCORE]
+    REASON: [REASON]
     """
     
     try:
         response = model.generate_content(prompt)
         text = response.text.strip()
-        if text.upper().startswith("YES"):
-            return True, text
+        
+        decision = "NO"
+        score = 0
+        reason = ""
+        
+        for line in text.split('\n'):
+            if line.startswith("DECISION:"):
+                decision = line.replace("DECISION:", "").strip().upper()
+            elif line.startswith("SCORE:"):
+                try:
+                    score = int(line.replace("SCORE:", "").strip())
+                except:
+                    score = 0
+            elif line.startswith("REASON:"):
+                reason = line.replace("REASON:", "").strip()
+        
+        if decision == "YES":
+            return True, score, reason
         else:
-            return False, text
+            return False, score, reason
+            
     except Exception as e:
         print(f"Error checking relevance: {e}")
-        return False, str(e)
+        return False, 0, str(e)
 
 def analyze_paper(text):
     """
