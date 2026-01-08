@@ -8,15 +8,24 @@ def fetch_daily_papers(date=None):
     Returns a list of dictionaries containing title, id, and link.
     """
     if date is None:
-        # Defaults to today UTC to align with Hugging Face server time
-        # This prevents "date must be less than or equal to..." errors if local time is ahead
+        # For robustness, we check today. If it's very early UTC, today might be empty.
         target_date = datetime.datetime.now(datetime.timezone.utc).date()
     else:
         target_date = date
 
+    print(f"DEBUG: Fetching papers for date: {target_date}")
+
     try:
         # list_daily_papers returns an iterator. We must consume it to trigger the API call and catch errors.
         papers_data = list(list_daily_papers(date=target_date))
+        
+        # If today yielded 0 papers, it might be because the day just started in UTC and no papers are up yet.
+        # Fallback to yesterday automatically if today is empty.
+        if not papers_data:
+             print(f"DEBUG: No papers found for {target_date}. Trying yesterday...")
+             target_date = target_date - datetime.timedelta(days=1)
+             papers_data = list(list_daily_papers(date=target_date))
+             
     except Exception as e:
         # If today fails (e.g., timezone mismatch causing "future date" error), try yesterday
         if "must be less than" in str(e) or "Bad request" in str(e) or "400" in str(e):
