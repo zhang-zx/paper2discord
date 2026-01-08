@@ -1,10 +1,15 @@
 # Keywords to look for in paper titles or abstracts
 keywords:
-  - "LLM"
-  - "agent"
-  - "generative"
-  - "transformer"
-  - "multimodal"
+  - "video generation"
+  - "image generation"
+  - "text-to-video"
+  - "text-to-image"
+  - "diffusion model"
+  - "model efficiency"
+  - "efficient inference"
+  - "quantization"
+  - "multimodal foundation model"
+  - "vision language model architecture"
 
 # Time to run the report (24-hour format, ET)
 schedule_time: "22:00"
