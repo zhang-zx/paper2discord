@@ -18,8 +18,18 @@ def fetch_daily_papers(date=None):
         # list_daily_papers returns an iterator or list of objects
         papers_data = list_daily_papers(date=target_date)
     except Exception as e:
-        print(f"Error fetching papers: {e}")
-        return []
+        # If today fails (e.g., timezone mismatch causing "future date" error), try yesterday
+        if "must be less than" in str(e) or "Bad request" in str(e):
+            print(f"Warning: Fetching for {target_date} failed. Trying yesterday.")
+            target_date = target_date - datetime.timedelta(days=1)
+            try:
+                papers_data = list_daily_papers(date=target_date)
+            except Exception as e2:
+                print(f"Error fetching papers for {target_date}: {e2}")
+                return []
+        else:
+            print(f"Error fetching papers: {e}")
+            return []
 
     papers = []
     
