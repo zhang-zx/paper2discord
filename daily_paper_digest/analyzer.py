@@ -100,6 +100,14 @@ def analyze_paper(text):
     
     ## 5. 📚 Relation to Previous Work
     (Identify 3-5 highly relevant papers. Format as a list: `* [Title](Link)`. If no direct link in text, use `https://scholar.google.com/scholar?q=TITLE`)
+
+    ## 6. 🔗 Resources & Community
+    - **Code/Project:** Extract any GitHub repositories or Project Page URLs mentioned in the text. If none are found, state "Not found in text".
+    - **Community Sentiment:** Provide search links for this paper title on:
+      - [Twitter/X](https://twitter.com/search?q=TITLE)
+      - [Reddit](https://www.reddit.com/search/?q=TITLE)
+      - [Hacker News](https://hn.algolia.com/?q=TITLE)
+      (Replace TITLE with the URL-encoded paper title)
     
     Paper Content (Truncated):
     {text[:100000]} 
