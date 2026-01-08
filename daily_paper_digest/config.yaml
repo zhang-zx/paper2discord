@@ -27,7 +27,8 @@ categories:
     description: "Other interesting AI papers matching keywords."
 
 # Time to run the report (24-hour format, ET)
-schedule_time: "22:00"
+# 18:00 ET is 23:00 UTC (1 hour before UTC day switch)
+schedule_time: "18:00"
 
 # Maximum number of papers to analyze and send per run
 max_papers: 5

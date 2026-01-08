@@ -2,9 +2,10 @@ name: Daily Paper Digest
 
 on:
   schedule:
-    # Runs at 03:00 UTC on Tue, Wed, Thu, Fri, Sat
-    # This corresponds to 10:00 PM EST (UTC-5) or 11:00 PM EDT (UTC-4) on Mon-Fri
-    - cron: '0 3 * * 2-6'
+    # Runs at 23:00 UTC on Mon, Tue, Wed, Thu, Fri
+    # This is 1 hour before UTC midnight (Hugging Face date switch)
+    # Corresponds to 6:00 PM EST / 7:00 PM EDT
+    - cron: '0 23 * * 1-5'
   workflow_dispatch: # Allows manual triggering from the Actions tab
 
 jobs:
