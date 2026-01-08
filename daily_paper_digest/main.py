@@ -9,7 +9,7 @@ import pytz
 
 from daily_paper_digest.scraper import fetch_daily_papers
 from daily_paper_digest.content_extractor import extract_text_from_pdf
-from daily_paper_digest.analyzer import check_relevance, analyze_paper
+from daily_paper_digest.analyzer import check_relevance, analyze_paper, generate_illustration
 from daily_paper_digest.discord_notifier import send_discord_message, send_markdown_report
 
 # Load environment variables
@@ -93,6 +93,7 @@ def run_daily_digest():
         for paper in papers_in_cat:
             title = paper['title']
             pdf_link = paper['pdf_link']
+            summary = paper['summary']
             reason = paper['relevance_reason']
             score = paper['relevance_score']
             
@@ -107,11 +108,15 @@ def run_daily_digest():
             # 4b. Deep Research Analysis
             report = analyze_paper(text)
             
+            # 4c. Generate Illustration
+            print("-> Generating illustration...")
+            image_bytes = generate_illustration(summary)
+            
             # 5. Send to Discord
             
             # Header
             header = f"📄 **{title}**\n🔗 <{paper['link']}>\n\n**Relevance (Score: {score}/10):** {reason}\n"
-            send_discord_message(webhook_url, header, thread_id=thread_id)
+            send_discord_message(webhook_url, header, thread_id=thread_id, image_file=image_bytes, image_filename="illustration.png")
             
             # Report (Structured)
             send_markdown_report(webhook_url, report, thread_id=thread_id)
