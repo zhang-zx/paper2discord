@@ -24,6 +24,7 @@ def run_daily_digest():
     
     config = load_config()
     keywords = config.get("keywords", [])
+    categories = config.get("categories", [])
     webhook_url = os.getenv("DISCORD_WEBHOOK_URL")
     
     if not webhook_url:
@@ -43,13 +44,14 @@ def run_daily_digest():
         summary = paper['summary']
         
         print(f"Checking relevance for: {title}")
-        is_relevant, score, reason = check_relevance(title, summary, keywords)
+        is_relevant, score, category, reason = check_relevance(title, summary, keywords, categories)
         time.sleep(1) # Rate limit politeness
         
         if is_relevant:
-            print(f"-> RELEVANT (Score: {score}).")
+            print(f"-> RELEVANT (Score: {score}, Category: {category}).")
             paper['relevance_score'] = score
             paper['relevance_reason'] = reason
+            paper['category'] = category
             relevant_papers.append(paper)
         else:
             print("-> Not relevant.")
@@ -61,34 +63,49 @@ def run_daily_digest():
     
     print(f"Selected {len(top_papers)} top papers from {len(relevant_papers)} relevant ones.")
 
-    # 4. Analyze and Send Top 5
+    # 4. Group by category
+    grouped_papers = {}
     for paper in top_papers:
-        title = paper['title']
-        pdf_link = paper['pdf_link']
-        reason = paper['relevance_reason']
-        score = paper['relevance_score']
+        cat = paper.get('category', 'General AI')
+        if cat not in grouped_papers:
+            grouped_papers[cat] = []
+        grouped_papers[cat].append(paper)
+
+    # 5. Analyze and Send by Category
+    for cat_name, papers_in_cat in grouped_papers.items():
+        # Find category info for emoji
+        cat_info = next((c for c in categories if c['name'] == cat_name), {'emoji': '🤖'})
         
-        print(f"Analyzing Top Paper: {title} (Score: {score})")
-        
-        # 4a. Extract text
-        text = extract_text_from_pdf(pdf_link)
-        if not text:
-            print("-> Failed to extract text. Skipping.")
-            continue
+        # Send Category Header
+        send_discord_message(webhook_url, f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n{cat_info['emoji']} **CATEGORY: {cat_name.upper()}**\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+
+        for paper in papers_in_cat:
+            title = paper['title']
+            pdf_link = paper['pdf_link']
+            reason = paper['relevance_reason']
+            score = paper['relevance_score']
             
-        # 4b. Deep Research Analysis
-        report = analyze_paper(text)
-        
-        # 5. Send to Discord
-        # Header
-        header = f"📄 **{title}**\n🔗 {paper['link']}\n\n**Relevance (Score: {score}/10):** {reason}\n"
-        send_discord_message(webhook_url, header)
-        
-        # Report (Structured)
-        send_markdown_report(webhook_url, report)
-        
-        # Separator
-        send_discord_message(webhook_url, "✨ --------------------------------------------------------------------- ✨")
+            print(f"Analyzing Top Paper: {title} (Score: {score})")
+            
+            # 4a. Extract text
+            text = extract_text_from_pdf(pdf_link)
+            if not text:
+                print("-> Failed to extract text. Skipping.")
+                continue
+                
+            # 4b. Deep Research Analysis
+            report = analyze_paper(text)
+            
+            # 5. Send to Discord
+            # Header
+            header = f"📄 **{title}**\n🔗 {paper['link']}\n\n**Relevance (Score: {score}/10):** {reason}\n"
+            send_discord_message(webhook_url, header)
+            
+            # Report (Structured)
+            send_markdown_report(webhook_url, report)
+            
+            # Separator
+            send_discord_message(webhook_url, "✨ --------------------------------------------------------------------- ✨")
             
     print(f"[{datetime.now()}] Job complete. Sent {len(top_papers)} reports.")
 

@@ -11,6 +11,21 @@ keywords:
   - "multimodal foundation model"
   - "vision language model architecture"
 
+# Categories for grouping reports
+categories:
+  - name: "Generative Media"
+    emoji: "🎥"
+    description: "Video and image generation, diffusion models, text-to-media."
+  - name: "Model Efficiency"
+    emoji: "⚡"
+    description: "Quantization, efficient inference, model compression."
+  - name: "Multimodal Foundation"
+    emoji: "🌐"
+    description: "Multimodal architecture, vision-language models."
+  - name: "General AI"
+    emoji: "🤖"
+    description: "Other interesting AI papers matching keywords."
+
 # Time to run the report (24-hour format, ET)
 schedule_time: "22:00"
 

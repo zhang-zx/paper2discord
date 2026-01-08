@@ -11,19 +11,25 @@ client = None
 if api_key:
     client = genai.Client(api_key=api_key)
 
-def check_relevance(title, summary, keywords):
+def check_relevance(title, summary, keywords, categories=None):
     """
     Asks Gemini if the paper is relevant based on title, summary and keywords.
-    Returns (bool, score, reason). Score is 1-10.
+    Also classifies the paper into a category if categories are provided.
+    Returns (bool, score, category, reason). Score is 1-10.
     """
     if not client:
         print("GEMINI_API_KEY not found.")
-        return False, 0, "Missing API Key"
+        return False, 0, "Other", "Missing API Key"
 
     model_id = 'gemini-2.0-flash-lite-preview-02-05'
     
+    categories_str = ""
+    if categories:
+        categories_str = "Categories: " + ", ".join([c['name'] for c in categories])
+
     prompt = f"""
     I have a list of keywords indicating my research interests: {keywords}.
+    {categories_str}
     
     Here is a paper:
     Title: {title}
@@ -32,11 +38,13 @@ def check_relevance(title, summary, keywords):
     Tasks:
     1. Is this paper relevant to my interests? Answer "YES" or "NO".
     2. Provide a relevance score from 1 to 10 (10 being highly relevant).
-    3. Provide a very brief explanation.
+    3. If relevant, select the best category from the list above. If none fit well, use "General AI".
+    4. Provide a very brief explanation.
     
     Format your response as:
     DECISION: [YES/NO]
     SCORE: [SCORE]
+    CATEGORY: [CATEGORY NAME]
     REASON: [REASON]
     """
     
@@ -49,6 +57,7 @@ def check_relevance(title, summary, keywords):
         
         decision = "NO"
         score = 0
+        category = "General AI"
         reason = ""
         
         for line in text.split('\n'):
@@ -59,17 +68,19 @@ def check_relevance(title, summary, keywords):
                     score = int(line.replace("SCORE:", "").strip())
                 except:
                     score = 0
+            elif line.startswith("CATEGORY:"):
+                category = line.replace("CATEGORY:", "").strip()
             elif line.startswith("REASON:"):
                 reason = line.replace("REASON:", "").strip()
         
         if decision == "YES":
-            return True, score, reason
+            return True, score, category, reason
         else:
-            return False, score, reason
+            return False, score, category, reason
             
     except Exception as e:
         print(f"Error checking relevance: {e}")
-        return False, 0, str(e)
+        return False, 0, "General AI", str(e)
 
 def analyze_paper(text):
     """
@@ -128,12 +139,16 @@ if __name__ == "__main__":
 
     keywords = ["LLM", "agent"]
 
+    categories = [{"name": "Generative Media"}, {"name": "Model Efficiency"}]
+
     title = "Large Language Models as Agents"
 
     summary = "We show that LLMs can act as agents."
 
     print("Checking relevance...")
 
-    rel, score, reason = check_relevance(title, summary, keywords)
+    rel, score, category, reason = check_relevance(title, summary, keywords, categories)
 
-    print(f"Relevant: {rel}, Score: {score}, Reason: {reason}")
+    print(f"Relevant: {rel}, Score: {score}, Category: {category}, Reason: {reason}")
+
+
