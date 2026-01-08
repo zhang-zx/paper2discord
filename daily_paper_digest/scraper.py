@@ -15,15 +15,15 @@ def fetch_daily_papers(date=None):
         target_date = date
 
     try:
-        # list_daily_papers returns an iterator or list of objects
-        papers_data = list_daily_papers(date=target_date)
+        # list_daily_papers returns an iterator. We must consume it to trigger the API call and catch errors.
+        papers_data = list(list_daily_papers(date=target_date))
     except Exception as e:
         # If today fails (e.g., timezone mismatch causing "future date" error), try yesterday
-        if "must be less than" in str(e) or "Bad request" in str(e):
-            print(f"Warning: Fetching for {target_date} failed. Trying yesterday.")
+        if "must be less than" in str(e) or "Bad request" in str(e) or "400" in str(e):
+            print(f"Warning: Fetching for {target_date} failed ({e}). Trying yesterday.")
             target_date = target_date - datetime.timedelta(days=1)
             try:
-                papers_data = list_daily_papers(date=target_date)
+                papers_data = list(list_daily_papers(date=target_date))
             except Exception as e2:
                 print(f"Error fetching papers for {target_date}: {e2}")
                 return []
