@@ -69,29 +69,51 @@ def send_discord_message(webhook_url, content, thread_name=None, thread_id=None)
         if thread_name and i == 0:
             params["wait"] = "true"
 
-        try:
-            response = requests.post(webhook_url, json=data, params=params)
-            response.raise_for_status()
-            
-            # If we created a thread, get the Thread ID.
-            # When creating a thread via webhook, the response is the Message object.
-            # The 'channel_id' of this message is the ID of the newly created thread.
-            if thread_name and i == 0:
+        # Retry loop for rate limits
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                response = requests.post(webhook_url, json=data, params=params)
+                
+                if response.status_code == 429:
+                    try:
+                        retry_after = response.json().get('retry_after', 1)
+                    except:
+                        retry_after = 1
+                    print(f"Rate limited. Waiting {retry_after}s...")
+                    time.sleep(retry_after + 0.1)
+                    continue # Retry
+                
+                response.raise_for_status()
+                
+                # If we created a thread, get its ID (which is the message ID or channel_id)
+                # For Forum Channels, the response 'id' is the thread ID.
+                # For Text Channels (if supported), 'id' is the message ID.
+                # But typically 'id' of the response message object IS the thread ID for forum threads.
+                if thread_name and i == 0:
+                    try:
+                        resp_json = response.json()
+                        last_response_id = resp_json.get('id') 
+                        # In forum channels, the created post's ID is the thread ID.
+                    except:
+                        pass
+                
+                # Successful, break retry loop
+                break
+                
+            except requests.RequestException as e:
+                print(f"Error sending to Discord: {e}")
                 try:
-                    resp_json = response.json()
-                    # print(f"DEBUG: Thread Creation Response: {resp_json}")
-                    last_response_id = resp_json.get('channel_id')
+                    print(f"Discord API Response: {response.text}")
                 except:
                     pass
-            
-            # Rate limiting prevention
-            time.sleep(1) 
-        except requests.RequestException as e:
-            print(f"Error sending to Discord: {e}")
-            try:
-                print(f"Discord API Response: {response.text}")
-            except:
-                pass
+                # Don't break immediately on network errors, maybe retry? 
+                # For now, just break to avoid infinite loops if it's a hard error.
+                if response.status_code != 429:
+                    break
+        
+        # Rate limiting prevention (polite delay between chunks)
+        time.sleep(1)
             
     return last_response_id
 
