@@ -1,0 +1,10 @@
+# Keywords to look for in paper titles or abstracts
+keywords:
+  - "LLM"
+  - "agent"
+  - "generative"
+  - "transformer"
+  - "multimodal"
+
+# Time to run the report (24-hour format, ET)
+schedule_time: "22:00"

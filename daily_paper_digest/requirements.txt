@@ -1,0 +1,7 @@
+huggingface_hub
+google-generativeai
+schedule
+pytz
+pyyaml
+pypdf
+python-dotenv
