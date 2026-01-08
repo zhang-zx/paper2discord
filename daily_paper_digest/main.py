@@ -54,9 +54,10 @@ def run_daily_digest():
         else:
             print("-> Not relevant.")
             
-    # 3. Select Top 5
+    # 3. Select Top N based on config
+    max_papers = config.get("max_papers", 5)
     relevant_papers.sort(key=lambda x: x.get('relevance_score', 0), reverse=True)
-    top_papers = relevant_papers[:5]
+    top_papers = relevant_papers[:max_papers]
     
     print(f"Selected {len(top_papers)} top papers from {len(relevant_papers)} relevant ones.")
 
