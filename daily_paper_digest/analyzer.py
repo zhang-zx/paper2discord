@@ -110,7 +110,7 @@ def analyze_paper(text):
     (Briefly, how did they do it?)
     
     ## 5. 📚 Relation to Previous Work
-    (Identify 3-5 highly relevant papers. Format as a list: `- [Title](<Link>)`. If no direct link in text, use `https://scholar.google.com/scholar?q=TITLE`)
+    (Identify 3-5 highly relevant papers. Format as a list: `[Title](<Link>)`. If no direct link in text, use `https://scholar.google.com/scholar?q=TITLE`)
 
     ## 6. 🔗 Resources & Community
     - **Code/Project:** Extract any GitHub repositories or Project Page URLs mentioned in the text. Wrap the URL in < > like `<url>`. If none are found, state "Not found in text".
