@@ -1,28 +1,26 @@
-import google.generativeai as genai
+from google import genai
 import os
 import yaml
 from dotenv import load_dotenv
 
 load_dotenv()
 
-# Configure Gemini
+# Configure Gemini Client
 api_key = os.getenv("GEMINI_API_KEY")
-if not api_key:
-    # Handle missing key if necessary, or let it fail later
-    pass
-else:
-    genai.configure(api_key=api_key)
+client = None
+if api_key:
+    client = genai.Client(api_key=api_key)
 
 def check_relevance(title, summary, keywords):
     """
     Asks Gemini if the paper is relevant based on title, summary and keywords.
     Returns (bool, score, reason). Score is 1-10.
     """
-    if not api_key:
+    if not client:
         print("GEMINI_API_KEY not found.")
         return False, 0, "Missing API Key"
 
-    model = genai.GenerativeModel('gemini-2.0-flash-lite-preview-02-05')
+    model_id = 'gemini-2.0-flash-lite-preview-02-05'
     
     prompt = f"""
     I have a list of keywords indicating my research interests: {keywords}.
@@ -43,7 +41,10 @@ def check_relevance(title, summary, keywords):
     """
     
     try:
-        response = model.generate_content(prompt)
+        response = client.models.generate_content(
+            model=model_id,
+            contents=prompt
+        )
         text = response.text.strip()
         
         decision = "NO"
@@ -75,10 +76,10 @@ def analyze_paper(text):
     Performs deep research analysis on the full paper text.
     Returns a markdown formatted report.
     """
-    if not api_key:
+    if not client:
         return "Error: Missing API Key"
 
-    model = genai.GenerativeModel('gemini-3-pro-preview')
+    model_id = 'gemini-3-pro-preview'
     
     prompt = f"""
     You are an expert researcher using deep thinking. Read the paper and provide a high-quality summary report formatted for Discord.
@@ -103,20 +104,28 @@ def analyze_paper(text):
     Paper Content (Truncated):
     {text[:100000]} 
     """
-    # Note: 100k chars is well within Gemini 1.5 Pro/Flash limits (1M/2M tokens). 
-    # But just in case, we truncate to avoid hitting very hard limits if text is garbage.
     
     try:
-        response = model.generate_content(prompt)
+        response = client.models.generate_content(
+            model=model_id,
+            contents=prompt
+        )
         return response.text
     except Exception as e:
         return f"Error analyzing paper: {e}"
 
 if __name__ == "__main__":
+
     # Test relevance
+
     keywords = ["LLM", "agent"]
+
     title = "Large Language Models as Agents"
+
     summary = "We show that LLMs can act as agents."
+
     print("Checking relevance...")
-    rel, reason = check_relevance(title, summary, keywords)
-    print(f"Relevant: {rel}, Reason: {reason}")
+
+    rel, score, reason = check_relevance(title, summary, keywords)
+
+    print(f"Relevant: {rel}, Score: {score}, Reason: {reason}")
