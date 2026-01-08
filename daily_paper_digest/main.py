@@ -20,7 +20,7 @@ def load_config():
         return yaml.safe_load(f)
 
 def run_daily_digest():
-    print(f"[{datetime.now()}] Starting Daily Paper Digest...")
+    print(f"[{datetime.now(pytz.utc)}] Starting Daily Paper Digest...")
     
     config = load_config()
     keywords = config.get("keywords", [])
@@ -77,7 +77,7 @@ def run_daily_digest():
         cat_info = next((c for c in categories if c['name'] == cat_name), {'emoji': '🤖'})
         
         # Create a THREAD (Forum Post) for this category
-        date_str = datetime.now().strftime("%Y-%m-%d")
+        date_str = datetime.now(pytz.utc).strftime("%Y-%m-%d")
         thread_title = f"{cat_info['emoji']} {cat_name} - {date_str}"
         
         # Send Header Message which creates the forum post (thread)
@@ -119,19 +119,20 @@ def run_daily_digest():
             # Separator
             send_discord_message(webhook_url, "✨ --------------------------------------------------------------------- ✨", thread_id=thread_id)
             
-    print(f"[{datetime.now()}] Job complete. Sent {len(top_papers)} reports.")
+    print(f"[{datetime.now(pytz.utc)}] Job complete. Sent {len(top_papers)} reports.")
 
 def start_scheduler():
     config = load_config()
-    schedule_time_str = config.get("schedule_time", "22:00")
+    schedule_time_str = config.get("schedule_time", "23:00")
     
-    print(f"Scheduler started. Running daily at {schedule_time_str} ET.")
+    print(f"Scheduler started. Running daily at {schedule_time_str} UTC.")
     
-    et_tz = pytz.timezone('US/Eastern')
+    # Configure timezone (UTC)
+    utc_tz = pytz.utc
     
     while True:
-        now_et = datetime.now(et_tz)
-        current_time = now_et.strftime("%H:%M")
+        now_utc = datetime.now(utc_tz)
+        current_time = now_utc.strftime("%H:%M")
         
         # Check if matches schedule time
         # We also need to ensure we don't run multiple times in the same minute
@@ -140,14 +141,14 @@ def start_scheduler():
         # Actually, simpler logic:
         # Calculate next run time.
         
-        today_target = now_et.replace(
+        today_target = now_utc.replace(
             hour=int(schedule_time_str.split(":")[0]),
             minute=int(schedule_time_str.split(":")[1]),
             second=0,
             microsecond=0
         )
         
-        if now_et >= today_target:
+        if now_utc >= today_target:
             # Schedule for tomorrow
             next_run = today_target + timedelta(days=1)
         else:
@@ -160,9 +161,9 @@ def start_scheduler():
              print(f"Skipping weekend run on {next_run.strftime('%A')}")
              next_run += timedelta(days=1)
             
-        wait_seconds = (next_run - now_et).total_seconds()
+        wait_seconds = (next_run - now_utc).total_seconds()
         
-        print(f"Next run in {wait_seconds/3600:.2f} hours (at {next_run} ET).")
+        print(f"Next run in {wait_seconds/3600:.2f} hours (at {next_run} UTC).")
         time.sleep(wait_seconds)
         
         run_daily_digest()

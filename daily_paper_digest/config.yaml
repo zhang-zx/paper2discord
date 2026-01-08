@@ -26,9 +26,9 @@ categories:
     emoji: "🤖"
     description: "Other interesting AI papers matching keywords."
 
-# Time to run the report (24-hour format, ET)
-# 18:00 ET is 23:00 UTC (1 hour before UTC day switch)
-schedule_time: "18:00"
+# Time to run the report (24-hour format, UTC)
+# 23:00 UTC is 1 hour before UTC day switch (midnight)
+schedule_time: "23:00"
 
 # Maximum number of papers to analyze and send per run
 max_papers: 5
