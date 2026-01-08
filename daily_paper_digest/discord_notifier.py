@@ -73,10 +73,14 @@ def send_discord_message(webhook_url, content, thread_name=None, thread_id=None)
             response = requests.post(webhook_url, json=data, params=params)
             response.raise_for_status()
             
-            # If we created a thread, get its ID (which is the message ID)
+            # If we created a thread, get the Thread ID.
+            # When creating a thread via webhook, the response is the Message object.
+            # The 'channel_id' of this message is the ID of the newly created thread.
             if thread_name and i == 0:
                 try:
-                    last_response_id = response.json().get('id')
+                    resp_json = response.json()
+                    # print(f"DEBUG: Thread Creation Response: {resp_json}")
+                    last_response_id = resp_json.get('channel_id')
                 except:
                     pass
             
@@ -84,6 +88,10 @@ def send_discord_message(webhook_url, content, thread_name=None, thread_id=None)
             time.sleep(1) 
         except requests.RequestException as e:
             print(f"Error sending to Discord: {e}")
+            try:
+                print(f"Discord API Response: {response.text}")
+            except:
+                pass
             
     return last_response_id
 

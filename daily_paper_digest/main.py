@@ -76,17 +76,12 @@ def run_daily_digest():
         # Find category info for emoji
         cat_info = next((c for c in categories if c['name'] == cat_name), {'emoji': '🤖'})
         
-        # Create a THREAD for this category
+        # Send Category Header to main channel
+        print(f"Sending Category Header: {cat_name}")
         date_str = datetime.now().strftime("%Y-%m-%d")
-        thread_title = f"{cat_info['emoji']} {cat_name} Digest - {date_str}"
         
-        # Send Header Message which starts the thread
-        print(f"Creating thread: {thread_title}")
-        header_text = f"**Daily Digest: {cat_name}**\nDate: {date_str}\nFound {len(papers_in_cat)} papers."
-        thread_id = send_discord_message(webhook_url, header_text, thread_name=thread_title)
-        
-        if not thread_id:
-            print("Failed to create thread, falling back to main channel.")
+        header_text = f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n{cat_info['emoji']} **CATEGORY: {cat_name.upper()}** ({date_str})\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        send_discord_message(webhook_url, header_text)
         
         for paper in papers_in_cat:
             title = paper['title']
@@ -105,17 +100,17 @@ def run_daily_digest():
             # 4b. Deep Research Analysis
             report = analyze_paper(text)
             
-            # 5. Send to Discord (Inside the thread)
+            # 5. Send to Discord
             
             # Header
             header = f"📄 **{title}**\n🔗 {paper['link']}\n\n**Relevance (Score: {score}/10):** {reason}\n"
-            send_discord_message(webhook_url, header, thread_id=thread_id)
+            send_discord_message(webhook_url, header)
             
             # Report (Structured)
-            send_markdown_report(webhook_url, report, thread_id=thread_id)
+            send_markdown_report(webhook_url, report)
             
             # Separator
-            send_discord_message(webhook_url, "✨ --------------------------------------------------------------------- ✨", thread_id=thread_id)
+            send_discord_message(webhook_url, "✨ --------------------------------------------------------------------- ✨")
             
     print(f"[{datetime.now()}] Job complete. Sent {len(top_papers)} reports.")
 
