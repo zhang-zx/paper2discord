@@ -22,7 +22,7 @@ def check_relevance(title, summary, keywords):
         print("GEMINI_API_KEY not found.")
         return False, "Missing API Key"
 
-    model = genai.GenerativeModel('gemini-2.0-flash-exp')
+    model = genai.GenerativeModel('gemini-2.0-flash-lite-preview-02-05')
     
     prompt = f"""
     I have a list of keywords indicating my research interests: {keywords}.
@@ -54,7 +54,7 @@ def analyze_paper(text):
     if not api_key:
         return "Error: Missing API Key"
 
-    model = genai.GenerativeModel('gemini-2.0-flash-exp')
+    model = genai.GenerativeModel('gemini-2.0-flash-lite-preview-02-05')
     
     prompt = f"""
     You are an expert researcher. Read the following academic paper content and provide a comprehensive summary report.
@@ -64,7 +64,10 @@ def analyze_paper(text):
     2. **Key Findings**: What did they discover? (Bullet points)
     3. **Key Takeaways**: Why does this matter?
     4. **Methodology**: How did they do it?
-    5. **Relation to Previous Work**: What does this build upon?
+    5. **Relation to Previous Work**: Identify 3-5 highly relevant papers this work builds upon. For each, provide the **Title** and a **Link**.
+       - If the paper text contains a URL (like arxiv.org/abs/...), use it.
+       - If not, format the link as a Google Scholar search query: `https://scholar.google.com/scholar?q=TITLE` replacing TITLE with the paper title.
+       - Format as a list: `* [Title](Link)`
     
     Format the output in clean Markdown.
     
