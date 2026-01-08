@@ -4,12 +4,13 @@ import datetime
 def fetch_daily_papers(date=None):
     """
     Fetches the list of papers from Hugging Face Papers for the given date.
-    If date is None, fetches for the current date.
+    If date is None, fetches for the current date (UTC).
     Returns a list of dictionaries containing title, id, and link.
     """
     if date is None:
-        # Defaults to today
-        target_date = datetime.date.today()
+        # Defaults to today UTC to align with Hugging Face server time
+        # This prevents "date must be less than or equal to..." errors if local time is ahead
+        target_date = datetime.datetime.now(datetime.timezone.utc).date()
     else:
         target_date = date
 
