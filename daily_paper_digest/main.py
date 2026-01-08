@@ -10,7 +10,7 @@ import pytz
 from daily_paper_digest.scraper import fetch_daily_papers
 from daily_paper_digest.content_extractor import extract_text_from_pdf
 from daily_paper_digest.analyzer import check_relevance, analyze_paper
-from daily_paper_digest.discord_notifier import send_discord_message
+from daily_paper_digest.discord_notifier import send_discord_message, send_markdown_report
 
 # Load environment variables
 load_dotenv()
@@ -66,8 +66,8 @@ def run_daily_digest():
             header = f"📄 **{title}**\n🔗 {paper['link']}\n\n**Relevance:** {reason}\n"
             send_discord_message(webhook_url, header)
             
-            # Report (The notifier will handle smart chunking)
-            send_discord_message(webhook_url, report)
+            # Report (Structured)
+            send_markdown_report(webhook_url, report)
             
             # Separator
             send_discord_message(webhook_url, "✨ --------------------------------------------------------------------- ✨")

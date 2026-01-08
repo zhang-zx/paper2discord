@@ -57,21 +57,26 @@ def analyze_paper(text):
     model = genai.GenerativeModel('gemini-3-pro-preview')
     
     prompt = f"""
-    You are an expert researcher. Use your advanced reasoning and deep thinking capabilities to read the following academic paper content and provide a comprehensive, insightful summary report.
+    You are an expert researcher using deep thinking. Read the paper and provide a high-quality summary report formatted for Discord.
     
-    The report should include:
-    1. **One-sentence Summary**: A concise hook.
-    2. **Key Findings**: What did they discover? (Bullet points)
-    3. **Key Takeaways**: Why does this matter?
-    4. **Methodology**: How did they do it?
-    5. **Relation to Previous Work**: Identify 3-5 highly relevant papers this work builds upon. For each, provide the **Title** and a **Link**.
-       - If the paper text contains a URL (like arxiv.org/abs/...), use it.
-       - If not, format the link as a Google Scholar search query: `https://scholar.google.com/scholar?q=TITLE` replacing TITLE with the paper title.
-       - Format as a list: `* [Title](Link)`
+    Structure the output strictly using these Markdown headers:
     
-    Format the output in clean Markdown.
+    ## 1. 💡 One-sentence Summary
+    (A concise hook)
     
-    Paper Content (Truncated if too long):
+    ## 2. 🔑 Key Findings
+    (3-5 concise bullet points. Focus on concepts and capability shifts. Omit specific benchmark numbers or leaderboard rankings unless they represent a massive breakthrough.)
+    
+    ## 3. 🧠 Key Takeaways
+    (Why does this matter? What is the impact?)
+    
+    ## 4. 🛠️ Methodology
+    (Briefly, how did they do it?)
+    
+    ## 5. 📚 Relation to Previous Work
+    (Identify 3-5 highly relevant papers. Format as a list: `* [Title](Link)`. If no direct link in text, use `https://scholar.google.com/scholar?q=TITLE`)
+    
+    Paper Content (Truncated):
     {text[:100000]} 
     """
     # Note: 100k chars is well within Gemini 1.5 Pro/Flash limits (1M/2M tokens). 

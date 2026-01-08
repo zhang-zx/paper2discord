@@ -36,6 +36,40 @@ def smart_split(text, limit=1900):
         
     return chunks
 
+def send_markdown_report(webhook_url, text):
+    """
+    Parses a markdown report with ## headers and sends each section as a distinct message.
+    Prevents splitting sections mid-way unless they are huge.
+    """
+    if not webhook_url: return
+
+    # Split by '## ' which indicates a new section
+    # We use a lookahead or just manual splitting
+    lines = text.split('\n')
+    sections = []
+    current_section = ""
+    
+    for line in lines:
+        if line.strip().startswith("## "):
+            if current_section.strip():
+                sections.append(current_section.strip())
+            current_section = line + "\n"
+        else:
+            current_section += line + "\n"
+            
+    if current_section.strip():
+        sections.append(current_section.strip())
+        
+    # Send each section
+    for section in sections:
+        # If section is huge (>1900), fall back to smart_split
+        if len(section) > 1900:
+            sub_chunks = smart_split(section)
+            for sub in sub_chunks:
+                send_discord_message(webhook_url, sub)
+        else:
+            send_discord_message(webhook_url, section)
+
 def send_discord_message(webhook_url, content):
     """
     Sends a message to Discord via Webhook.
