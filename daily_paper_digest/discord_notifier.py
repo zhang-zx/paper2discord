@@ -36,15 +36,64 @@ def smart_split(text, limit=1900):
         
     return chunks
 
-def send_markdown_report(webhook_url, text):
+def send_discord_message(webhook_url, content, thread_name=None, thread_id=None):
+    """
+    Sends a message to Discord via Webhook.
+    - If `thread_name` is provided, creates a new thread with that name and returns the thread_id.
+    - If `thread_id` is provided, sends the message into that thread.
+    """
+    if not webhook_url:
+        print("Error: Missing Discord Webhook URL.")
+        return None
+
+    chunks = smart_split(content)
+    last_response_id = None
+
+    for i, chunk in enumerate(chunks):
+        if not chunk: continue
+        
+        data = {
+            "content": chunk
+        }
+        
+        # Only apply thread_name to the first chunk to create the thread
+        if thread_name and i == 0:
+            data["thread_name"] = thread_name
+        
+        # Prepare params
+        params = {}
+        if thread_id:
+            params["thread_id"] = thread_id
+        
+        # If we are creating a thread, we need to wait for response to get ID
+        if thread_name and i == 0:
+            params["wait"] = "true"
+
+        try:
+            response = requests.post(webhook_url, json=data, params=params)
+            response.raise_for_status()
+            
+            # If we created a thread, get its ID (which is the message ID)
+            if thread_name and i == 0:
+                try:
+                    last_response_id = response.json().get('id')
+                except:
+                    pass
+            
+            # Rate limiting prevention
+            time.sleep(1) 
+        except requests.RequestException as e:
+            print(f"Error sending to Discord: {e}")
+            
+    return last_response_id
+
+def send_markdown_report(webhook_url, text, thread_id=None):
     """
     Parses a markdown report with ## headers and sends each section as a distinct message.
-    Prevents splitting sections mid-way unless they are huge.
     """
     if not webhook_url: return
 
     # Split by '## ' which indicates a new section
-    # We use a lookahead or just manual splitting
     lines = text.split('\n')
     sections = []
     current_section = ""
@@ -64,33 +113,8 @@ def send_markdown_report(webhook_url, text):
     for section in sections:
         # If section is huge (>1900), fall back to smart_split
         if len(section) > 1900:
-            sub_chunks = smart_split(section)
-            for sub in sub_chunks:
-                send_discord_message(webhook_url, sub)
+            # We don't support creating threads inside markdown report splitting
+            # So just pass thread_id if it exists
+            send_discord_message(webhook_url, section, thread_id=thread_id)
         else:
-            send_discord_message(webhook_url, section)
-
-def send_discord_message(webhook_url, content):
-    """
-    Sends a message to Discord via Webhook.
-    Uses smart splitting to preserve formatting.
-    """
-    if not webhook_url:
-        print("Error: Missing Discord Webhook URL.")
-        return
-
-    chunks = smart_split(content)
-
-    for chunk in chunks:
-        if not chunk: continue
-        
-        data = {
-            "content": chunk
-        }
-        try:
-            response = requests.post(webhook_url, json=data)
-            response.raise_for_status()
-            # Rate limiting prevention (polite delay)
-            time.sleep(1) 
-        except requests.RequestException as e:
-            print(f"Error sending to Discord: {e}")
+            send_discord_message(webhook_url, section, thread_id=thread_id)

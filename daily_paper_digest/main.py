@@ -76,9 +76,18 @@ def run_daily_digest():
         # Find category info for emoji
         cat_info = next((c for c in categories if c['name'] == cat_name), {'emoji': '🤖'})
         
-        # Send Category Header
-        send_discord_message(webhook_url, f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n{cat_info['emoji']} **CATEGORY: {cat_name.upper()}**\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-
+        # Create a THREAD for this category
+        date_str = datetime.now().strftime("%Y-%m-%d")
+        thread_title = f"{cat_info['emoji']} {cat_name} Digest - {date_str}"
+        
+        # Send Header Message which starts the thread
+        print(f"Creating thread: {thread_title}")
+        header_text = f"**Daily Digest: {cat_name}**\nDate: {date_str}\nFound {len(papers_in_cat)} papers."
+        thread_id = send_discord_message(webhook_url, header_text, thread_name=thread_title)
+        
+        if not thread_id:
+            print("Failed to create thread, falling back to main channel.")
+        
         for paper in papers_in_cat:
             title = paper['title']
             pdf_link = paper['pdf_link']
@@ -96,16 +105,17 @@ def run_daily_digest():
             # 4b. Deep Research Analysis
             report = analyze_paper(text)
             
-            # 5. Send to Discord
+            # 5. Send to Discord (Inside the thread)
+            
             # Header
             header = f"📄 **{title}**\n🔗 {paper['link']}\n\n**Relevance (Score: {score}/10):** {reason}\n"
-            send_discord_message(webhook_url, header)
+            send_discord_message(webhook_url, header, thread_id=thread_id)
             
             # Report (Structured)
-            send_markdown_report(webhook_url, report)
+            send_markdown_report(webhook_url, report, thread_id=thread_id)
             
             # Separator
-            send_discord_message(webhook_url, "✨ --------------------------------------------------------------------- ✨")
+            send_discord_message(webhook_url, "✨ --------------------------------------------------------------------- ✨", thread_id=thread_id)
             
     print(f"[{datetime.now()}] Job complete. Sent {len(top_papers)} reports.")
 
