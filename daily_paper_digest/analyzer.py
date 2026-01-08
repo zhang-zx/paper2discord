@@ -82,50 +82,6 @@ def check_relevance(title, summary, keywords, categories=None):
         print(f"Error checking relevance: {e}")
         return False, 0, "General AI", str(e)
 
-import io
-
-def generate_illustration(summary):
-    """
-    Generates an illustration for the paper based on its summary using Imagen 3.
-    Returns the image bytes or None if failed.
-    """
-    if not client:
-        return None
-
-    # Use Imagen 3.0 as nano-banana was not found/supported for generation in this context
-    model_id = 'imagen-3.0-generate-001'
-    
-    # Construct a prompt
-    # We want a tech illustration style
-    prompt = f"""
-    Create a high-quality, modern, abstract technical illustration representing this research concept:
-    {summary[:400]}...
-    
-    Style: Minimalist, futuristic, isometric 3D, blue and white color scheme, digital art.
-    """
-    
-    try:
-        response = client.models.generate_images(
-            model=model_id,
-            prompt=prompt,
-            config={'number_of_images': 1}
-        )
-        
-        # Accessing the first image. 
-        # The SDK returns an object with .image_bytes usually or PIL image?
-        # In new SDK, generated_images[0].image is a PIL Image usually.
-        # Let's convert to bytes for Discord.
-        
-        img = response.generated_images[0].image
-        img_byte_arr = io.BytesIO()
-        img.save(img_byte_arr, format='PNG')
-        img_byte_arr.seek(0)
-        return img_byte_arr
-
-    except Exception as e:
-        print(f"Error generating illustration: {e}")
-        return None
-
 def analyze_paper(text):
     """
     Performs deep research analysis on the full paper text.
