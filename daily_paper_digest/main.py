@@ -103,7 +103,7 @@ def run_daily_digest():
             # 5. Send to Discord
             
             # Header
-            header = f"📄 **{title}**\n🔗 {paper['link']}\n\n**Relevance (Score: {score}/10):** {reason}\n"
+            header = f"📄 **{title}**\n🔗 <{paper['link']}>\n\n**Relevance (Score: {score}/10):** {reason}\n"
             send_discord_message(webhook_url, header)
             
             # Report (Structured)
