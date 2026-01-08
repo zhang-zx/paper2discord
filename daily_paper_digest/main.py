@@ -109,6 +109,13 @@ def start_scheduler():
         else:
             next_run = today_target
             
+        # Ensure next_run is a weekday (Mon=0, Fri=4)
+        # If Saturday (5), add 2 days -> Monday
+        # If Sunday (6), add 1 day -> Monday
+        while next_run.weekday() >= 5:
+             print(f"Skipping weekend run on {next_run.strftime('%A')}")
+             next_run += timedelta(days=1)
+            
         wait_seconds = (next_run - now_et).total_seconds()
         
         print(f"Next run in {wait_seconds/3600:.2f} hours (at {next_run} ET).")
