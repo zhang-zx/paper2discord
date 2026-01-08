@@ -45,6 +45,7 @@ def run_daily_digest():
         # 2. Check relevance
         print(f"Checking relevance for: {title}")
         is_relevant, reason = check_relevance(title, summary, keywords)
+        time.sleep(2) # Rate limit politeness
         
         if is_relevant:
             print(f"-> RELEVANT ({reason}). Analyzing...")
@@ -60,8 +61,16 @@ def run_daily_digest():
             report = analyze_paper(text)
             
             # 5. Send to Discord
-            message = f"**New Relevant Paper Found!**\n\n**Title:** {title}\n**Link:** {paper['link']}\n**Relevance:** {reason}\n\n{report}"
-            send_discord_message(webhook_url, message)
+            
+            # Header
+            header = f"📄 **{title}**\n🔗 {paper['link']}\n\n**Relevance:** {reason}\n"
+            send_discord_message(webhook_url, header)
+            
+            # Report (The notifier will handle smart chunking)
+            send_discord_message(webhook_url, report)
+            
+            # Separator
+            send_discord_message(webhook_url, "✨ --------------------------------------------------------------------- ✨")
             
         else:
             print("-> Not relevant.")

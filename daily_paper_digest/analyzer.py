@@ -22,7 +22,7 @@ def check_relevance(title, summary, keywords):
         print("GEMINI_API_KEY not found.")
         return False, "Missing API Key"
 
-    model = genai.GenerativeModel('gemini-2.0-flash-lite-preview-02-05')
+    model = genai.GenerativeModel('gemini-3-pro-preview')
     
     prompt = f"""
     I have a list of keywords indicating my research interests: {keywords}.
@@ -54,10 +54,10 @@ def analyze_paper(text):
     if not api_key:
         return "Error: Missing API Key"
 
-    model = genai.GenerativeModel('gemini-2.0-flash-lite-preview-02-05')
+    model = genai.GenerativeModel('gemini-3-pro-preview')
     
     prompt = f"""
-    You are an expert researcher. Read the following academic paper content and provide a comprehensive summary report.
+    You are an expert researcher. Use your advanced reasoning and deep thinking capabilities to read the following academic paper content and provide a comprehensive, insightful summary report.
     
     The report should include:
     1. **One-sentence Summary**: A concise hook.
