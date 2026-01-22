@@ -1,30 +1,12 @@
 # Keywords to look for in paper titles or abstracts
 keywords:
-  - "video generation"
-  - "image generation"
-  - "text-to-video"
-  - "text-to-image"
-  - "diffusion model"
-  - "model efficiency"
-  - "efficient inference"
-  - "quantization"
-  - "multimodal foundation model"
-  - "vision language model architecture"
+  - "something"
 
 # Categories for grouping reports
 categories:
-  - name: "Generative Media"
-    emoji: "🎥"
-    description: "Video and image generation, diffusion models, text-to-media."
-  - name: "Model Efficiency"
-    emoji: "⚡"
-    description: "Quantization, efficient inference, model compression."
-  - name: "Multimodal Foundation"
-    emoji: "🌐"
-    description: "Multimodal architecture, vision-language models."
-  - name: "General AI"
+  - name: "Something"
     emoji: "🤖"
-    description: "Other interesting AI papers matching keywords."
+    description: "Something."
 
 # Time to run the report (24-hour format, UTC)
 # 23:00 UTC is 1 hour before UTC day switch (midnight)
