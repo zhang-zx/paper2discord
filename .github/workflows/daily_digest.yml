@@ -26,6 +26,18 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r daily_paper_digest/requirements.txt
 
+      - name: Create Config File
+        run: |
+          echo "${{ secrets.APP_CONFIG }}" > daily_paper_digest/config.yaml
+        # If the secret is empty/missing, we might fall back to example or fail.
+        # Ideally, user provides the content. 
+        # For safety, if secret is empty, we copy example?
+        if: "${{ secrets.APP_CONFIG != '' }}"
+
+      - name: Use Example Config if Secret Missing
+        if: "${{ secrets.APP_CONFIG == '' }}"
+        run: cp daily_paper_digest/config.example.yaml daily_paper_digest/config.yaml
+
       - name: Run Digest
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
