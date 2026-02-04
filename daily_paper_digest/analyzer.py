@@ -21,7 +21,7 @@ def check_relevance(title, summary, keywords, categories=None):
         print("GEMINI_API_KEY not found.")
         return False, 0, "Other", "Missing API Key"
 
-    model_id = 'gemini-2.0-flash-lite-preview-02-05'
+    model_id = 'gemini-2.0-flash-lite'
     
     categories_str = ""
     if categories:

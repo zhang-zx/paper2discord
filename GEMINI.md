@@ -12,7 +12,7 @@
 ## Architecture & Technologies
 *   **Language:** Python 3.10+
 *   **AI Models:**
-    *   **Relevance/Categorization:** `gemini-2.0-flash-lite-preview-02-05` (Fast & Cheap)
+    *   **Relevance/Categorization:** `gemini-2.0-flash-lite` (Fast & Cheap)
     *   **Deep Analysis:** `gemini-3-pro-preview` (High Reasoning)
 *   **Data Source:** Hugging Face Papers (`huggingface_hub`) + arXiv PDF extraction (`pypdf`).
 *   **Integration:** Discord Webhooks (Forum Channel support).
